@@ -68,4 +68,29 @@ class Parser:
         return [self.stemmer.stem(w) for w in tokens if w not in self.stopwords]
     
 inmail = open("../machineLearning-dataScience/datasets/trec07p/data/inmail.1").read()
+print("----------------------------------- MAIL ------------------------------------")
 print(inmail)
+
+p = Parser()
+p.parse("../machineLearning-dataScience/datasets/trec07p/data/inmail.1")
+
+index = open("../machineLearning-dataScience/datasets/trec07p/full/index").readlines()
+
+def parse_index(path_to_index, n_elements):
+    ret_indexes = []
+    index = open(path_to_index).readlines()
+    for i in range(n_elements):
+        mail = index[i].split("../")
+        label = mail[0]
+        path = mail[1][:-1]
+        ret_indexes.append({"label":label, "email_path":path})
+    return ret_indexes
+
+def parse_email(index):
+    p = Parser()
+    pmail = p.parse(index["email_path"])
+    return pmail, index["label"]
+
+indexes = parse_index("../machineLearning-dataScience/datasets/trec07p/full/index", 10)
+print("----------------------------------- INDEXES ------------------------------------")
+print(indexes)
