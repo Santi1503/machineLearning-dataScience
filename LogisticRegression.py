@@ -4,6 +4,10 @@ import string
 import nltk
 import os
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+import pandas as pd
 nltk.download('stopwords')
 
 # Esta clase facilita el procesamiento de los correos electrónicos con código HTML
@@ -106,6 +110,7 @@ mail, label = parse_email(index[0])
 print("El correo es: ", label)
 print(mail)
 
+""" Usando VECTORIZER
 prep_email = [" ".join(mail['subject']) + " ".join(mail['body'])]
 
 vectorizer = CountVectorizer()
@@ -116,3 +121,70 @@ print("Caracteristicas de entrada: ", vectorizer.get_feature_names_out())
 
 X = vectorizer.transform(prep_email)
 print("\nValues: \n", X.toarray())
+"""
+
+def create_prep_dataset(index_path, n_elements):
+    X = []
+    Y = []
+    indexes = parse_index(index_path, n_elements)
+    for i in range(n_elements):
+        print("\rParsing email: ", i, " "*5, end='')
+        mail, label = parse_email(indexes[i])
+        X.append(" ".join(mail['subject']) + " ".join(mail['body']))
+        Y.append(label)
+    return X, Y
+
+"""
+#Entrenamiento con 100 correos
+X_train, Y_train = create_prep_dataset('../machineLearning-dataScience/datasets/trec07p/full/index', 100)
+print("----------------------------------- TRAIN ------------------------------------")
+vectorizer = CountVectorizer()
+X_train = vectorizer.fit_transform(X_train)
+
+print(X_train.toarray())
+print("\nFeatures: ", len(vectorizer.get_feature_names_out()))
+
+df = pd.DataFrame(X_train.toarray(), columns=[vectorizer.get_feature_names_out()])
+print(df)
+
+clf = LogisticRegression()
+clf.fit(X_train, Y_train)
+
+X, Y = create_prep_dataset('../machineLearning-dataScience/datasets/trec07p/full/index', 150)
+X_test = X[100:]
+Y_test = Y[100:]
+
+X_test = vectorizer.transform(X_test)
+
+Y_pred = clf.predict(X_test)
+print("\n---------------------- PREDICCION ---------------------")
+print("Prediccion: \n",Y_pred)
+print("\nEtiquetas reales: \n", Y_test)
+
+print('Accuracy: {:.3f}'.format(accuracy_score(Y_test, Y_pred)))
+"""
+
+#Entrenamiento con 12000 correos
+print("+---------------------------------+")
+print("| Entrenamiento con 12000 correos |")
+print("+---------------------------------+")
+X, Y = create_prep_dataset('../machineLearning-dataScience/datasets/trec07p/full/index', 12000)
+x_train, Y_train = X[:10000], Y[:10000]
+X_test, Y_test = X[10000:], Y[10000:]
+
+print("\n+-------------------------+")
+print("| Entrenamiento terminado |")
+print("+-------------------------+")
+vectorizer = CountVectorizer()
+X_train = vectorizer.fit_transform(x_train)
+clf = LogisticRegression()
+clf.fit(X_train, Y_train)
+
+print("+-----------------------+")
+print("| Calculando prediccion |")
+print("+-----------------------+")
+X_test = vectorizer.transform(X_test)
+Y_pred = clf.predict(X_test)
+print("+---------------------------------+")
+print('Accuracy: {:.3f}'.format(accuracy_score(Y_test, Y_pred)))
+print("+---------------------------------+")
