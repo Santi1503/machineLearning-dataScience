@@ -2,6 +2,8 @@ from html.parser import HTMLParser
 import email
 import string
 import nltk
+import os
+from sklearn.feature_extraction.text import CountVectorizer
 nltk.download('stopwords')
 
 # Esta clase facilita el procesamiento de los correos electrónicos con código HTML
@@ -67,14 +69,16 @@ class Parser:
         tokens = list(filter(None, text.split(" ")))
         return [self.stemmer.stem(w) for w in tokens if w not in self.stopwords]
     
-inmail = open("../machineLearning-dataScience/datasets/trec07p/data/inmail.1").read()
+"""inmail = open("../machineLearning-dataScience/datasets/trec07p/data/inmail.1").read()
 print("----------------------------------- MAIL ------------------------------------")
-print(inmail)
+print(inmail)"""
 
 p = Parser()
 p.parse("../machineLearning-dataScience/datasets/trec07p/data/inmail.1")
 
-index = open("../machineLearning-dataScience/datasets/trec07p/full/index").readlines()
+"""index = open("../machineLearning-dataScience/datasets/trec07p/full/index").readlines()
+print("-------------------------------------- INDEX -----------------------------------")
+print(index)"""
 
 def parse_index(path_to_index, n_elements):
     ret_indexes = []
@@ -91,6 +95,24 @@ def parse_email(index):
     pmail = p.parse(index["email_path"])
     return pmail, index["label"]
 
-indexes = parse_index("../machineLearning-dataScience/datasets/trec07p/full/index", 10)
+"""indexes = parse_index("../machineLearning-dataScience/datasets/trec07p/full/index", 10)
 print("----------------------------------- INDEXES ------------------------------------")
-print(indexes)
+print(indexes)"""
+
+index = parse_index("../machineLearning-dataScience/datasets/trec07p/full/index", 1)
+open(index[0]["email_path"]).read()
+
+mail, label = parse_email(index[0])
+print("El correo es: ", label)
+print(mail)
+
+prep_email = [" ".join(mail['subject']) + " ".join(mail['body'])]
+
+vectorizer = CountVectorizer()
+X = vectorizer.fit(prep_email)
+
+print("Email: ", prep_email, "\n")
+print("Caracteristicas de entrada: ", vectorizer.get_feature_names_out())
+
+X = vectorizer.transform(prep_email)
+print("\nValues: \n", X.toarray())
